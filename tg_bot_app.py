@@ -6,12 +6,12 @@ bot = telebot.TeleBot(TOKEN)
 
 @bot.message_handler(commands=['start'])
 def start(message: telebot.types.Message):
-    start_text = 'Вас приветствует бот, подсказывающий курсы валют. \
-\nДля начала работы бота введите команду в следующем формате: \n<Имя переводимой валюты>, \
+    start_text = 'Тебя приветствует бот, подсказывающий курсы валют. \
+\nДля начала работы бота введи команду в следующем формате: \n<Имя переводимой валюты>, \
 <Имя валюты, в которую переводим>, \
-<Количество переводимой валюты> (обязательно через запятую)\
-\n\nНажмите /find_out чтобы ознакомиться со списком валют, .\
- \n\nНажмите /help, чтобы получить порцию моральной поддержки от бота!'
+<Количество переводимой валюты> (обязательно в единственном числе, именительном падеже, через запятую)\
+\n\nНажми /find_out чтобы ознакомиться со списком валют, .\
+ \n\nНажми /help, чтобы получить порцию максимальной поддержки от бота!'
     bot.reply_to(message, start_text)
 
 @bot.message_handler(commands=['help'])
@@ -19,7 +19,7 @@ def help(message: telebot.types.Message):
     help_text = 'У тебя всё получится!\
 \nПросто введи название переводимой валюты, затем поставь запятую, напиши название валюты, в которую хотелось бы перевести, \
 снова поставь запятую и напиши количество переводимой валюты.\
-\n\nНапример: доллар, рубль, 100. В результате ты узнает, сколько будут стоить 100 долларов в рублях.\
+\n\nНапример: доллар, рубль, 100. В результате ты узнаешь, сколько будут стоить 100 долларов в рублях.\
 \n\nНу, а, чтобы узнать список доступных валют, просто вызови команду /find_out.\
 \nДерзай! Смотреть курсы валют очень весело :D'
     bot.reply_to(message, help_text)
@@ -37,7 +37,8 @@ def converter(message: telebot.types.Message):
         values = message.text.split(', ') #Разделяем валюты запятой, так как название валюты может быть из двух слов
 
         if len(values) != 3:
-            raise ConvertionException('Несоответствие количества параметров. Должно быть 3.')
+            raise ConvertionException('Несоответствие количества параметров. Должно быть 3.\
+\nНажмите /help, чтобы узнать, как пользоваться ботом')
 
         quote, base, amount = map(lambda x: x.lower(), values) #Регистр букв не имеет значения при вводе
         total_base = CurrencyConverter.converter(quote, base, amount)
@@ -48,7 +49,8 @@ def converter(message: telebot.types.Message):
     except Exception as e:
         bot.reply_to(message, f'Не удалось обработать команду\n{e}')
     else:
-        converter_text = f'Стоимость {amount} {quote} в {base} составляет {now_it_counts}'
+        converter_text = f"Стоимость {amount} {quote.make_agree_with_number(amount).word} в {base.inflect({'plur', 'loct'}).word} составляет {now_it_counts}\
+\n\nНажми /find_out, чтобы вспомнить список доступных валют"
         bot.send_message(message.chat.id, converter_text)
 
 bot.polling()
